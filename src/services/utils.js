@@ -1,12 +1,14 @@
 import "dotenv/config";
 
+/**
+ * Makes HTTP requests to Discord API
+ * Handles authentication and error responses
+ */
 export async function DiscordRequest(endpoint, options) {
-  // append endpoint to root API URL
   const url = "https://discord.com/api/v10/" + endpoint;
 
-  // Stringify payloads
+  // Stringify payloads for JSON requests
   if (options.body) options.body = JSON.stringify(options.body);
-  // Use fetch to make requests
 
   const res = await fetch(url, {
     headers: {
@@ -18,30 +20,35 @@ export async function DiscordRequest(endpoint, options) {
     ...options,
   });
 
-  // throw API errors
+  // Throw error if request failed
   if (!res.ok) {
     const data = await res.json();
     console.log(res.status);
     throw new Error(JSON.stringify(data));
   }
   
-  // return original response
   return res;
 }
 
+/**
+ * Registers global slash commands with Discord
+ * Overwrites existing commands with the same name
+ */
 export async function InstallGlobalCommands(appId, commands) {
-  // API endpoint to overwrite global commands
   const endpoint = `applications/${appId}/commands`;
 
   try {
-    // This is calling the bulk overwrite endpoint: https://discord.com/developers/docs/interactions/application-commands#bulk-overwrite-global-application-commands
+    // Bulk overwrite endpoint - replaces all existing global commands
     await DiscordRequest(endpoint, { method: "PUT", body: commands });
   } catch (err) {
-    console.error(err);
+    console.error("Error installing commands:", err);
   }
 }
 
-// Simple method that returns a random emoji from list
+/**
+ * Returns a random emoji from predefined list
+ * Used for adding personality to bot responses
+ */
 export function getRandomEmoji() {
   const emojiList = [
     "😭",
@@ -62,6 +69,11 @@ export function getRandomEmoji() {
   return emojiList[Math.floor(Math.random() * emojiList.length)];
 }
 
+/**
+ * Capitalizes first letter of a string
+ * Used for formatting choice names in commands
+ */
 export function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
